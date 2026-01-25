@@ -389,7 +389,7 @@ export const HELP_TABS: HelpTabDefinition[] = [
           },
           { 
             label: "Painting mode", 
-            detail: "Paint over triangles to select multiple triangles, then use the sidebar to bulk apply parameters like Terrain Type, Script ID, Texture, and more." 
+            detail: "Paint over triangles to select multiple triangles, then use the sidebar to bulk apply parameters like Terrain Type, Script ID, Texture, and more. You can hold CTRL to enter lasso mode"
           },
           { 
             label: "Export/Import mode", 
@@ -467,7 +467,7 @@ export const HELP_TABS: HelpTabDefinition[] = [
         id: "textures-overview",
         title: "Texture browser",
         paragraphs: [
-          "Shows all textures used on the world map. Use the picker in the header to switch between Overworld, Underwater, and Great Glacier atlases.",
+          "Shows all textures used on the world map. Use the picker in the header to switch between Overworld, Underwater, and Great Glacier atlases. If you type into the search bar, it will filter the list to show only textures that contain the search term in their name.",
         ],
         items: [
           { label: "Metadata", detail: "Each card lists the internal texture id, UV offset, and native resolution." },

@@ -262,10 +262,10 @@ export function WorldMesh({
               selectedGeometry.computeVertexNormals();
               return (
                 <group key={faceIndex}>
-                  {/* White semi-transparent fill */}
+                  {/* Yellow semi-transparent fill */}
                   <mesh geometry={selectedGeometry} renderOrder={9}>
                     <meshBasicMaterial 
-                      color="#ffffff" 
+                      color="#eab308" 
                       transparent={true}
                       opacity={0.33}
                       side={THREE.DoubleSide}
@@ -273,12 +273,12 @@ export function WorldMesh({
                       depthWrite={false}
                     />
                   </mesh>
-                  {/* Magenta outline */}
+                  {/* Yellow outline */}
                   <lineSegments renderOrder={10}>
                     <edgesGeometry attach="geometry" args={[selectedGeometry]} />
                     <lineBasicMaterial 
-                      color="#000" 
-                      opacity={0.33}
+                      color="#facc15" 
+                      opacity={0.8}
                       depthTest={false} 
                       depthWrite={false}
                       transparent

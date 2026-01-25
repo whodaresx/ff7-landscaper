@@ -577,6 +577,35 @@ export function useMaps() {
     }
   }, [markUnsavedChanges, setState, state.activeMapId]);
 
+  const batchUpdatePaintingSelectedTriangles = useCallback((faceIndices: number[], operation: 'add' | 'remove') => {
+    if (state.activeMapId === null) return;
+    const mapId = state.activeMapId;
+
+    setState(prev => {
+      const entry = prev.maps[mapId];
+      const nextSet = new Set(entry.paintingSelectedTriangles);
+      
+      if (operation === 'add') {
+        faceIndices.forEach(idx => nextSet.add(idx));
+      } else {
+        faceIndices.forEach(idx => nextSet.delete(idx));
+      }
+
+      const nextEntry: LoadedMapState = {
+        ...entry,
+        paintingSelectedTriangles: nextSet,
+      };
+
+      return {
+        ...prev,
+        maps: {
+          ...prev.maps,
+          [mapId]: nextEntry,
+        },
+      };
+    });
+  }, [setState, state.activeMapId]);
+
   const togglePaintingSelectedTriangle = useCallback((faceIndex: number, add: boolean) => {
     if (state.activeMapId === null) return;
     const mapId = state.activeMapId;
@@ -1097,5 +1126,6 @@ const updateTriangleVertices = useCallback((
     updateTriangleVertices,
     getMesh,
     getMeshGrid,
+    batchUpdatePaintingSelectedTriangles,
   };
 }

@@ -10,8 +10,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { TexturePreview } from "@/components/ui/texture-preview";
+} 
+from "@/components/ui/select";
+import { TextureSelector } from "@/components/ui/texture-selector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useAppState } from "@/hooks/useAppState";
@@ -275,28 +276,12 @@ export function SelectedTriangle({ triangle, textures, onVertexChange }: Selecte
           <div className="rounded-md border bg-muted/50 p-2 space-y-2">
             <div className="space-y-1">
               <Label className="text-xs">Texture</Label>
-              <Select
+              <TextureSelector
                 value={triangle.texture.toString()}
                 onValueChange={(value) => handlePropertyChange({ texture: parseInt(value) })}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {textures.map((texture, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      <div className="flex items-center gap-2">
-                        <TexturePreview 
-                          src={texture.imageData} 
-                          alt={texture.name} 
-                          size={24}
-                        />
-                        <span>{texture.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                textures={textures}
+                placeholder="Select texture"
+              />
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Size</span>
