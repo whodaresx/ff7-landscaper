@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useMaps } from "@/hooks/useMaps";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -9,16 +8,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TexturePreview } from "@/components/ui/texture-preview";
 import { TRIANGLE_TYPES } from "@/lib/map-data";
 import { useState } from "react";
+import { TextureSelector } from "@/components/ui/texture-selector";
 import { useMessagesState } from "@/hooks/useMessagesState";
 
 interface PaintingValues {
   type: string | null;
   region: string | null;
-  scriptId: string;
-  isChocobo: boolean;
+  scriptId: string | null;
+  isChocobo: boolean | null;
   texture: string | null;
 }
 
@@ -38,8 +37,8 @@ export function PaintingSidebar() {
   const [values, setValues] = useState<PaintingValues>({
     type: null,
     region: null,
-    scriptId: "0",
-    isChocobo: false,
+    scriptId: null,
+    isChocobo: null,
     texture: null
   });
   const [copiedTriangles, setCopiedTriangles] = useState<CopiedTriangleData[]>([]);
@@ -54,13 +53,15 @@ export function PaintingSidebar() {
     if (values.region !== null) {
       updates.locationId = parseInt(values.region);
     }
-    if (values.scriptId) {
+    if (values.scriptId !== null) {
       updates.script = parseInt(values.scriptId);
     }
     if (values.texture !== null) {
       updates.texture = parseInt(values.texture);
     }
-    updates.isChocobo = values.isChocobo;
+    if (values.isChocobo !== null) {
+      updates.isChocobo = values.isChocobo;
+    }
 
     updateSelectedTriangles(updates);
   };
@@ -116,6 +117,10 @@ export function PaintingSidebar() {
   return (
     <>
       <h3 className="text-sm font-medium">Painting Mode</h3>
+      <div className="text-xs text-muted-foreground mb-2">
+        <p>Hold <span className="font-bold">Ctrl + Drag</span> to lasso select.</p>
+        <p>Hold <span className="font-bold">Ctrl + Alt + Drag</span> to remove.</p>
+      </div>
       <div className="mt-4 space-y-4">
         <div className="flex space-x-1">
           <Button 
@@ -158,28 +163,12 @@ export function PaintingSidebar() {
 
         <div className="space-y-1.5">
           <Label>Texture</Label>
-          <Select
-            value={values.texture ?? undefined}
+          <TextureSelector
+            value={values.texture ?? ""}
             onValueChange={(value) => setValues(prev => ({ ...prev, texture: value }))}
-          >
-            <SelectTrigger className="h-8">
-              <SelectValue placeholder="Select texture" />
-            </SelectTrigger>
-            <SelectContent>
-              {textures.map((texture, index) => (
-                <SelectItem key={index} value={index.toString()}>
-                  <div className="flex items-center gap-2">
-                    <TexturePreview 
-                      src={texture.imageData} 
-                      alt={texture.name} 
-                      size={24}
-                    />
-                    <span>{texture.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            textures={textures}
+            placeholder="Select texture"
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -204,7 +193,7 @@ export function PaintingSidebar() {
         <div className="space-y-1.5">
           <Label>Script ID</Label>
           <Select
-            value={values.scriptId}
+            value={values.scriptId ?? undefined}
             onValueChange={(value) => setValues(prev => ({ ...prev, scriptId: value }))}
           >
             <SelectTrigger className="h-8">
@@ -222,13 +211,20 @@ export function PaintingSidebar() {
           </Select>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="chocobo"
-            checked={values.isChocobo}
-            onCheckedChange={(checked) => setValues(prev => ({ ...prev, isChocobo: checked === true }))}
-          />
-          <Label htmlFor="chocobo">Is Chocobo Area</Label>
+        <div className="space-y-1.5">
+          <Label>Is Chocobo Area</Label>
+          <Select
+            value={values.isChocobo === null ? undefined : values.isChocobo ? "yes" : "no"}
+            onValueChange={(value) => setValues(prev => ({ ...prev, isChocobo: value === "yes" }))}
+          >
+            <SelectTrigger className="h-8">
+              <SelectValue placeholder="Keep as is" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="yes">Yes</SelectItem>
+              <SelectItem value="no">No</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <Button 

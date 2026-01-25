@@ -10,6 +10,7 @@ import { CAMERA_HEIGHT, MESH_SIZE, SCALE, SHOW_DEBUG } from './constants';
 import { CameraDebugInfo, CameraDebugOverlay } from './components/DebugOverlay';
 import { MapControls } from './components/MapControls';
 import { WorldMesh } from './components/WorldMesh';
+import { LassoController } from './components/LassoController';
 import { useMaps, MapType, MapMode, dimensions, MESHES_IN_ROW, MESHES_IN_COLUMN } from '@/hooks/useMaps';
 import ModelOverlay from './ModelOverlay';
 
@@ -333,10 +334,13 @@ function MapViewer({
   // Grid should be visible in export mode regardless of toggle state
   const shouldShowGrid = showGrid || mode === 'export';
 
+  const [lassoPoints, setLassoPoints] = useState<{ x: number, y: number }[]>([]);
+  const [lassoMode, setLassoMode] = useState<'add' | 'remove'>('add');
+
   return (
     <div className="relative flex flex-col w-full h-full">
       <MapControls 
-        onRotate={handleRotate} 
+        onRotate={handleRotate}  
         onReset={resetView}
         wireframe={wireframe}
         onWireframeToggle={onWireframeToggle}
@@ -422,6 +426,7 @@ function MapViewer({
               }
             }}
           />
+          <LassoController onPointsChange={setLassoPoints} onModeChange={setLassoMode} />
           {worldmap && !isLoading && (
             <WorldMesh
               renderingMode={localRenderingMode}
@@ -440,6 +445,28 @@ function MapViewer({
           {showModels && <ModelOverlay zoomRef={zoomRef} />}
         </Canvas>
         {SHOW_DEBUG && <CameraDebugOverlay debugInfo={debugInfo} />}
+        {lassoPoints.length > 0 && (
+          <svg 
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              width: '100%', 
+              height: '100%', 
+              pointerEvents: 'none', 
+              zIndex: 9999,
+              overflow: 'visible'
+            }}
+          >
+            <path
+              d={lassoPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z'}
+              stroke={lassoMode === 'remove' ? '#ef4444' : '#eab308'}
+              strokeWidth="3"
+              fill={lassoMode === 'remove' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(234, 179, 8, 0.2)'}
+              strokeDasharray="5,5"
+            />
+          </svg>
+        )}
       </div>
     </div>
   );

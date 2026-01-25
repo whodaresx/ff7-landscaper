@@ -171,6 +171,11 @@ export function useGeometry(
       geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
       geom.computeVertexNormals();
 
+      // Dispose of the previous geometry if it exists
+      if (geometryRef.current) {
+        geometryRef.current.dispose();
+      }
+
       geometryRef.current = geom;
       triangleMapRef.current = triangleMap;
 
@@ -181,15 +186,25 @@ export function useGeometry(
   // Trigger geometry computation when dependencies change
   useEffect(() => {
     computeGeometry();
+    // Cleanup on unmount
+    return () => {
+      if (geometryRef.current) {
+        geometryRef.current.dispose();
+      }
+    };
   }, [computeGeometry]);
 
   const result = geometryResult;
 
   // Create normal visualization geometry
   const normalsMapRef = useRef<Map<string, number>>(new Map());
+  const [normalLinesGeometry, setNormalLinesGeometry] = useState<THREE.BufferGeometry | null>(null);
 
-  const normalLinesGeometry = useMemo(() => {
-    if (!geometryRef.current || !worldmap || !triangleMapRef.current) return null;
+  useEffect(() => {
+    if (!result.geometry || !worldmap || !triangleMapRef.current) {
+      setNormalLinesGeometry(null);
+      return;
+    }
 
     // Count total vertices to allocate buffer
     let totalVertices = 0;
@@ -246,8 +261,13 @@ export function useGeometry(
 
     const normalGeometry = new THREE.BufferGeometry();
     normalGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-    return normalGeometry;
-  }, [geometryRef.current, worldmap, triangleMapRef.current]);
+    
+    setNormalLinesGeometry(normalGeometry);
+
+    return () => {
+      normalGeometry.dispose();
+    };
+  }, [result.geometry, worldmap, triangleMapRef.current]);
 
   const updateTriangleUVs = useCallback((
     triangle: TriangleWithVertices,
@@ -503,15 +523,21 @@ export function useGeometry(
 
 
 export function useSelectedTriangleGeometry(triangleMap: TriangleWithVertices[] | null, selectedFaceIndex: number | null) {
-  return useMemo(() => {
+  const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
+
+  useEffect(() => {
     if (!triangleMap || selectedFaceIndex === null) {
-      return null;
+      setGeometry(null);
+      return;
     }
 
     const tri = triangleMap[selectedFaceIndex];
-    if (!tri) return null;
+    if (!tri) {
+      setGeometry(null);
+      return;
+    }
 
-    const geometry = new THREE.BufferGeometry();
+    const geom = new THREE.BufferGeometry();
     const positions = new Float32Array(9);
     positions[0] = tri.transformedVertices.v0[0];
     positions[1] = tri.transformedVertices.v0[1] + SELECTION_Y_OFFSET;
@@ -523,9 +549,15 @@ export function useSelectedTriangleGeometry(triangleMap: TriangleWithVertices[] 
     positions[7] = tri.transformedVertices.v2[1] + SELECTION_Y_OFFSET;
     positions[8] = tri.transformedVertices.v2[2];
 
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.computeVertexNormals();
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geom.computeVertexNormals();
 
-    return geometry;
+    setGeometry(geom);
+
+    return () => {
+      geom.dispose();
+    };
   }, [triangleMap, selectedFaceIndex]);
+
+  return geometry;
 }
